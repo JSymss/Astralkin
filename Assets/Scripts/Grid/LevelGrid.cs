@@ -6,9 +6,14 @@ using UnityEngine;
 public class LevelGrid : MonoBehaviour
 {
 
+    [SerializeField] private int width;
+    [SerializeField] private int height;
+    [SerializeField] private float cellSize;
+
     public static LevelGrid Instance {get; private set;}
     [SerializeField] private Transform gridDebugObjectPrefab;
-    private GridSystem gridSystem;
+
+    private GridSystem<GridObject> gridSystem;
 
     public event EventHandler OnAnyUnitMovedGridPosition;
 
@@ -22,8 +27,14 @@ public class LevelGrid : MonoBehaviour
         }
         Instance = this;
         
-        gridSystem = new GridSystem(10, 10, 2f);
-        gridSystem.CreateDebugObjects(gridDebugObjectPrefab);
+        gridSystem = new GridSystem<GridObject>(width, height, cellSize,
+                (GridSystem<GridObject> g, GridPosition gridPosition) => new GridObject(g, gridPosition));
+        //gridSystem.CreateDebugObjects(gridDebugObjectPrefab);
+    }
+
+    private void Start() 
+    {
+        Pathfinding.Instance.SetUp(width, height, cellSize);
     }
 
     public List<Unit> GetUnitListAtGridPosition(GridPosition gridPosition, Unit unit)

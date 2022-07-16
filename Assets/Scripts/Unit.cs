@@ -13,9 +13,6 @@ public class Unit : MonoBehaviour
     public static event EventHandler OnAnyUnitDead;
 
     private GridPosition gridPosition;
-    private MoveAction moveAction;
-    private SpinAction spinAction;
-    private ShootAction shootAction;
     private BaseAction[] baseActionArray;
     private int actionPoints = ACTION_POINTS_MAX;
     private HealthSystem healthSystem;
@@ -23,11 +20,8 @@ public class Unit : MonoBehaviour
 
     private void Awake() 
     {
-        moveAction = GetComponent<MoveAction>();
-        spinAction = GetComponent<SpinAction>();
         baseActionArray = GetComponents<BaseAction>();
         healthSystem = GetComponent<HealthSystem>();
-        shootAction = GetComponent<ShootAction>();
     }
 
     private void Start() 
@@ -53,15 +47,18 @@ public class Unit : MonoBehaviour
         }
     }
 
-    public MoveAction GetMoveAction()
+    public T GetAction<T>() where T : BaseAction
     {
-        return moveAction;
+        foreach( BaseAction baseAction in baseActionArray)
+        {
+            if(baseAction is T)
+                {
+                return (T)baseAction;
+                }
+        }
+        return null;
     }
-
-        public SpinAction GetSpinAction()
-    {
-        return spinAction;
-    }
+    
 
     public GridPosition GetGridPosition()
     {
@@ -140,11 +137,6 @@ public class Unit : MonoBehaviour
         Destroy(gameObject);
 
         OnAnyUnitDead?.Invoke(this, EventArgs.Empty);
-    }
-
-    public ShootAction GetShootAction()
-    {
-        return shootAction;
     }
 
     public float GetHealthNormalized()
