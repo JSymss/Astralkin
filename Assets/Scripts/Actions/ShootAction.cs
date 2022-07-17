@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class ShootAction : BaseAction
 {
+    public static event EventHandler<OnShootEventArgs> OnAnyShoot;
     public event EventHandler<OnShootEventArgs> OnShoot;
 
     public class OnShootEventArgs : EventArgs
@@ -12,6 +13,8 @@ public class ShootAction : BaseAction
         public Unit targetUnit;
         public Unit shootingUnit;
     }
+
+    [SerializeField] LayerMask obstaclesLayerMask;
 
     private enum State
     {
@@ -62,6 +65,12 @@ public class ShootAction : BaseAction
 
     private void Shoot()
     {
+        OnAnyShoot?.Invoke(this, new OnShootEventArgs
+        {
+            targetUnit = this.targetUnit,
+            shootingUnit = unit
+        });
+        
         OnShoot?.Invoke(this, new OnShootEventArgs
         {
             targetUnit = this.targetUnit,
@@ -138,6 +147,20 @@ public class ShootAction : BaseAction
                 if(targetUnit.IsEnemy() == unit.IsEnemy())
                 {
                     // both units on the same 'team'
+                    continue;
+                }
+
+                Vector3 unitWorldPosition = LevelGrid.Instance.GetWorldPosition(unitGridPosition);
+                Vector3 shootDirection = (targetUnit.GetWorldPosition() - unitWorldPosition).normalized;
+                
+                float unitShoulderHeight = 1.7f;
+                if(Physics.Raycast(
+                    unitWorldPosition + Vector3.up * unitShoulderHeight,
+                    shootDirection,
+                    Vector3.Distance(unitWorldPosition, targetUnit.GetWorldPosition()),
+                    obstaclesLayerMask))
+                {
+                    // Blocked by an obstacle
                     continue;
                 }
 
